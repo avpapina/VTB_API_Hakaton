@@ -1,0 +1,12 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bpmn-ai-test-generator
+  thymeleaf:
+    cache: false
+
+logging:
+  level:
+    com.example.bpmnai: DEBUG

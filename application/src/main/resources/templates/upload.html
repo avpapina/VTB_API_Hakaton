@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Загрузка файлов</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .message { padding: 10px; background: #d4edda; border-radius: 4px; margin: 15px 0; }
+        h2 { margin-top: 30px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        .endpoint, .mapping { margin-left: 15px; }
+    </style>
+</head>
+<body>
+<h1>📁 Загрузка BPMN и OpenAPI файлов</h1>
+
+<div th:if="${message}" class="message" th:text="${message}"></div>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="bpmnFile">BPMN файл (.bpmn):</label>
+        <input type="file" id="bpmnFile" name="bpmnFile" accept=".bpmn,.xml" required>
+    </div>
+
+    <div class="form-group">
+        <label for="openapiFile">OpenAPI файл (.yaml, .json):</label>
+        <input type="file" id="openapiFile" name="openapiFile" accept=".yaml,.yml,.json" required>
+    </div>
+
+    <button type="submit">🚀 Начать анализ</button>
+</form>
+
+<!-- BPMN анализ -->
+<div th:if="${bpmnResult != null}">
+    <h2>📊 BPMN АНАЛИЗ</h2>
+    <p>Процесс: <b th:text="${bpmnResult.name}"></b> (ID: <span th:text="${bpmnResult.id}"></span>)</p>
+
+    <h3>Задачи</h3>
+    <ul>
+        <li th:each="task : ${bpmnResult.tasks}">
+            <b th:text="${task.name}"></b> (ID: <span th:text="${task.id}"></span>, Тип: <span th:text="${task.type != null ? task.type : 'serviceTask'}"></span>)
+            <br>Документация: <span th:text="${task.description != null ? task.description : '-'}"></span>
+        </li>
+    </ul>
+
+    <h3>Шлюзы</h3>
+    <ul>
+        <li th:each="gw : ${bpmnResult.gateways}">
+            <b th:text="${gw.name}"></b> (ID: <span th:text="${gw.id}"></span>, Тип: exclusiveGateway)
+        </li>
+    </ul>
+</div>
+
+<!-- OpenAPI анализ -->
+<div th:if="${openApiResult != null}">
+    <h2>📌 OPENAPI АНАЛИЗ</h2>
+    <ul>
+        <li th:each="ep : ${openApiResult.endpoints}">
+            <div class="endpoint">
+                <b th:text="${ep.method + ' ' + ep.path}"></b>
+                <br>Operation ID: <span th:text="${ep.operationId}"></span>
+                <br>Summary: <span th:text="${ep.summary}"></span>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div th:if="${mappings != null}">
+    <h2>🔗 СОПОСТАВЛЕНИЕ BPMN И OPENAPI</h2>
+    <ul>
+        <li th:each="map : ${mappings}">
+            BPMN задача: <b th:text="${map.bpmnTask.name}"></b>
+            <br th:if="${map.apiEndpoint != null}" />
+            <span th:if="${map.apiEndpoint != null}" class="mapping">
+                API endpoint: <b th:text="${map.apiEndpoint.method + ' ' + map.apiEndpoint.path}"></b>
+                <br>Operation ID: <span th:text="${map.apiEndpoint.operationId}"></span>
+                <br>Уверенность: <span th:text="${map.matchConfidence * 100}"></span>%
+            </span>
+            <span th:if="${map.apiEndpoint == null}">→ Не найден подходящий endpoint</span>
+        </li>
+    </ul>
+</div>
+
+<div style="margin-top: 20px;">
+    <a href="/reports">📊 Перейти к отчетам по тестам</a>
+</div>
+
+
+
+<div style="margin-top: 30px;">
+    <a href="/">← На главную</a>
+</div>
+</body>
+</html>

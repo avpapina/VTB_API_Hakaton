@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_01" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_01_bonus_payment" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_01" name="Начало&#10;пустой диаграммы">
+      <bpmn:outgoing>Flow_01_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_01" name="Конец">
+      <bpmn:incoming>Flow_01_1</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01_1" sourceRef="StartEvent_01" targetRef="EndEvent_01" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_01">
+    <bpmndi:BPMNPlane id="BPMNPlane_01" bpmnElement="Process_01_bonus_payment">
+      <bpmndi:BPMNShape id="StartEvent_01_di" bpmnElement="StartEvent_01">
+        <dc:Bounds x="100" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="89" y="236" width="58" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_01_di" bpmnElement="EndEvent_01">
+        <dc:Bounds x="292" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="294" y="236" width="32" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_01_1_di" bpmnElement="Flow_01_1">
+        <di:waypoint x="136" y="218" />
+        <di:waypoint x="292" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

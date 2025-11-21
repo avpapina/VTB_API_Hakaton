@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             targetNamespace="http://bonus.payment.bpmn"
+             id="Definitions_1">
+
+  <process id="BonusPointsPaymentProcess" name="Bonus Points Payment" isExecutable="true">
+
+    <startEvent id="StartEvent" name="Start Payment">
+      <outgoing>Flow_Start_GetBalance</outgoing>
+    </startEvent>
+
+    <serviceTask id="GetRewardsBalance" name="getRewardsBalance">
+      <extensionElements>
+        <camunda:documentation>GET /cards/accounts/external/{externalAccountID}/rewards/balance</camunda:documentation>
+      </extensionElements>
+      <incoming>Flow_Start_GetBalance</incoming>
+      <outgoing>Flow_Balance_Check</outgoing>
+    </serviceTask>
+
+    <sequenceFlow id="Flow_Start_GetBalance" sourceRef="StartEvent" targetRef="GetRewardsBalance"/>
+
+    <exclusiveGateway id="CheckEligibilityGateway" name="Check Eligibility">
+      <incoming>Flow_Balance_Check</incoming>
+      <outgoing>Flow_Eligible_Redemption</outgoing>
+      <outgoing>Flow_NotEligible</outgoing>
+    </exclusiveGateway>
+
+    <sequenceFlow id="Flow_Balance_Check" sourceRef="GetRewardsBalance" targetRef="CheckEligibilityGateway"/>
+
+    <sequenceFlow id="Flow_Eligible_Redemption" sourceRef="CheckEligibilityGateway" targetRef="ProcessRedemption">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${redemptionEligibility == true and availableBalance >= redemptionAmount}]]>
+      </conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="Flow_NotEligible" sourceRef="CheckEligibilityGateway" targetRef="EndFailure">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${redemptionEligibility == false or availableBalance < redemptionAmount}]]>
+      </conditionExpression>
+    </sequenceFlow>
+
+    <serviceTask id="ProcessRedemption" name="processRedemption">
+      <extensionElements>
+        <camunda:documentation>POST /cards/accounts/external/{externalAccountID}/rewards/redemption</camunda:documentation>
+      </extensionElements>
+      <incoming>Flow_Eligible_Redemption</incoming>
+      <outgoing>Flow_Redemption_Result</outgoing>
+    </serviceTask>
+
+    <exclusiveGateway id="CheckResultGateway" name="Check Result">
+      <incoming>Flow_Redemption_Result</incoming>
+      <outgoing>Flow_Success</outgoing>
+      <outgoing>Flow_Error</outgoing>
+    </exclusiveGateway>
+
+    <sequenceFlow id="Flow_Redemption_Result" sourceRef="ProcessRedemption" targetRef="CheckResultGateway"/>
+
+    <sequenceFlow id="Flow_Success" sourceRef="CheckResultGateway" targetRef="EndSuccess">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${httpStatus == 200}]]>
+      </conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="Flow_Error" sourceRef="CheckResultGateway" targetRef="EndFailure">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[${httpStatus != 200}]]>
+      </conditionExpression>
+    </sequenceFlow>
+
+    <endEvent id="EndSuccess" name="Success">
+      <incoming>Flow_Success</incoming>
+    </endEvent>
+
+    <endEvent id="EndFailure" name="Failure">
+      <incoming>Flow_NotEligible</incoming>
+      <incoming>Flow_Error</incoming>
+    </endEvent>
+
+  </process>
+
+</definitions>

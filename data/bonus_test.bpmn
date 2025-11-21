@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_01"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_01_bonus_payment" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_01" name="Клиент решает оплатить бонусными баллами">
+      <bpmn:outgoing>Flow_01_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <!-- ИЗМЕНЕНО: Получение баланса бонусов вместо списка счетов -->
+    <bpmn:task id="Task_01_GetBonusBalance" name="Получение баланса бонусов: GET /cards/accounts/external/{externalAccountID}/rewards/balance">
+      <bpmn:incoming>Flow_01_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_01_2</bpmn:outgoing>
+    </bpmn:task>
+    
+    <!-- ИЗМЕНЕНО: Проверка eligibility вместо аутентификации -->
+    <bpmn:task id="Task_01_CheckEligibility" name="Проверка возможности списания: GET /cards/accounts/external/{externalAccountID}/rewards/balance">
+      <bpmn:incoming>Flow_01_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_01_3</bpmn:outgoing>
+    </bpmn:task>
+    
+    <!-- ИЗМЕНЕНО: Списание бонусов вместо платежа -->
+    <bpmn:task id="Task_01_RedeemBonus" name="Списание бонусных баллов: POST /cards/accounts/external/{externalAccountID}/rewards/redemption">
+      <bpmn:incoming>Flow_01_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_01_4</bpmn:outgoing>
+    </bpmn:task>
+    
+    <!-- ИЗМЕНЕНО: Подтверждение списания вместо проверки статуса -->
+    <bpmn:task id="Task_01_ConfirmRedemption" name="Подтверждение списания: GET /cards/accounts/external/{externalAccountID}/rewards/balance">
+      <bpmn:incoming>Flow_01_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_01_5</bpmn:outgoing>
+    </bpmn:task>
+    
+    <bpmn:endEvent id="EndEvent_01" name="Оплата бонусами завершена">
+      <bpmn:incoming>Flow_01_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_01_1" sourceRef="StartEvent_01" targetRef="Task_01_GetBonusBalance"/>
+    <bpmn:sequenceFlow id="Flow_01_2" sourceRef="Task_01_GetBonusBalance" targetRef="Task_01_CheckEligibility"/>
+    <bpmn:sequenceFlow id="Flow_01_3" sourceRef="Task_01_CheckEligibility" targetRef="Task_01_RedeemBonus"/>
+    <bpmn:sequenceFlow id="Flow_01_4" sourceRef="Task_01_RedeemBonus" targetRef="Task_01_ConfirmRedemption"/>
+    <bpmn:sequenceFlow id="Flow_01_5" sourceRef="Task_01_ConfirmRedemption" targetRef="EndEvent_01"/>
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_01">
+    <bpmndi:BPMNPlane id="BPMNPlane_01" bpmnElement="Process_01_bonus_payment">
+      <bpmndi:BPMNShape id="StartEvent_01_di" bpmnElement="StartEvent_01">
+        <dc:Bounds x="100" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_01_GetBonusBalance_di" bpmnElement="Task_01_GetBonusBalance">
+        <dc:Bounds x="200" y="188" width="100" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_01_CheckEligibility_di" bpmnElement="Task_01_CheckEligibility">
+        <dc:Bounds x="350" y="188" width="100" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_01_RedeemBonus_di" bpmnElement="Task_01_RedeemBonus">
+        <dc:Bounds x="500" y="188" width="100" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_01_ConfirmRedemption_di" bpmnElement="Task_01_ConfirmRedemption">
+        <dc:Bounds x="650" y="188" width="100" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_01_di" bpmnElement="EndEvent_01">
+        <dc:Bounds x="800" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_01_1_di" bpmnElement="Flow_01_1">
+        <di:waypoint x="136" y="218"/>
+        <di:waypoint x="200" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01_2_di" bpmnElement="Flow_01_2">
+        <di:waypoint x="300" y="218"/>
+        <di:waypoint x="350" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01_3_di" bpmnElement="Flow_01_3">
+        <di:waypoint x="450" y="218"/>
+        <di:waypoint x="500" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01_4_di" bpmnElement="Flow_01_4">
+        <di:waypoint x="600" y="218"/>
+        <di:waypoint x="650" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01_5_di" bpmnElement="Flow_01_5">
+        <di:waypoint x="750" y="218"/>
+        <di:waypoint x="800" y="218"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

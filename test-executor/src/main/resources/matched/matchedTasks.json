@@ -1,0 +1,56 @@
+[ {
+  "testData" : "{\"firstName\":\"Андрей\",\"lastName\":\"Васильев\",\"phone\":\"+79950944364\",\"birthDate\":\"1993-02-15\",\"email\":\"test8480@example.com\"}",
+  "bpmnTaskName" : "Создание лида: POST /customer-leads",
+  "openApiEndpoint" : "/leads_impersonal",
+  "bpmnTaskId" : "Task_Process_02_credit_application_600959826",
+  "confidence" : 0.0,
+  "processId" : "Process_02_credit_application",
+  "taskName" : "Создание лида: POST /customer-leads",
+  "endpointUrl" : "/leads_impersonal",
+  "httpMethod" : "POST",
+  "matchConfidence" : 0.0
+}, {
+  "testData" : "{\"firstName\":\"Алексей\",\"lastName\":\"Сидоров\",\"phone\":\"+79974982066\",\"birthDate\":\"2006-04-25\",\"email\":\"test6810@example.com\"}",
+  "bpmnTaskName" : "Аутентификация: POST /auth/bank-token",
+  "openApiEndpoint" : "/leads_impersonal",
+  "bpmnTaskId" : "Task_Process_02_credit_application_1770946228",
+  "confidence" : 0.0,
+  "processId" : "Process_02_credit_application",
+  "taskName" : "Аутентификация: POST /auth/bank-token",
+  "endpointUrl" : "/leads_impersonal",
+  "httpMethod" : "POST",
+  "matchConfidence" : 0.0
+}, {
+  "testData" : "{\"firstName\":\"Андрей\",\"lastName\":\"Кузнецов\",\"phone\":\"+79589311176\",\"birthDate\":\"2003-05-03\",\"email\":\"test5405@example.com\"}",
+  "bpmnTaskName" : "Получение списка продуктов: GET /products",
+  "openApiEndpoint" : "/leads",
+  "bpmnTaskId" : "Task_Process_02_credit_application_-1585832029",
+  "confidence" : 0.0,
+  "processId" : "Process_02_credit_application",
+  "taskName" : "Получение списка продуктов: GET /products",
+  "endpointUrl" : "/leads",
+  "httpMethod" : "GET",
+  "matchConfidence" : 0.0
+}, {
+  "testData" : "{\"firstName\":\"Андрей\",\"lastName\":\"Сидоров\",\"phone\":\"+79809415579\",\"birthDate\":\"1991-05-05\",\"email\":\"test3186@example.com\"}",
+  "bpmnTaskName" : "Подача заявки: POST /product-application",
+  "openApiEndpoint" : "/leads_impersonal",
+  "bpmnTaskId" : "Task_Process_02_credit_application_789312711",
+  "confidence" : 0.0,
+  "processId" : "Process_02_credit_application",
+  "taskName" : "Подача заявки: POST /product-application",
+  "endpointUrl" : "/leads_impersonal",
+  "httpMethod" : "POST",
+  "matchConfidence" : 0.0
+}, {
+  "testData" : "{\"firstName\":\"Александр\",\"lastName\":\"Васильев\",\"phone\":\"+79039197687\",\"birthDate\":\"1997-08-28\",\"email\":\"test4193@example.com\"}",
+  "bpmnTaskName" : "Проверка статуса заявки: GET /product-application/{application_id}",
+  "openApiEndpoint" : "/leads",
+  "bpmnTaskId" : "Task_Process_02_credit_application_-262560817",
+  "confidence" : 0.0,
+  "processId" : "Process_02_credit_application",
+  "taskName" : "Проверка статуса заявки: GET /product-application/{application_id}",
+  "endpointUrl" : "/leads",
+  "httpMethod" : "GET",
+  "matchConfidence" : 0.0
+} ]

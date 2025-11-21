@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>BPMN Visualization</title>
+    <style>
+        #bpmn-container {
+            height: 70vh;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            background: white;
+            cursor: grab;
+            overflow: hidden;
+            position: relative;
+        }
+        #bpmn-container:active {
+            cursor: grabbing;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-form {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.active {
+            background: #28a745;
+        }
+        .mode-indicator {
+            padding: 8px 12px;
+            background: #6c757d;
+            color: white;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>BPMN Diagram Visualization</h1>
+    <div style="margin-top: 30px;">
+        <a href="/">← На главную</a>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${error}" class="message error" th:text="${error}"></div>
+    <div th:if="${success}" class="message success" th:text="${success}"></div>
+
+    <!-- Форма загрузки файла -->
+    <div class="upload-form">
+        <h3>Upload BPMN File</h3>
+        <form method="post" th:action="@{/visualization/upload}" enctype="multipart/form-data">
+            <input type="file" name="bpmnFile" accept=".bpmn" required>
+            <button type="submit">Upload and Visualize</button>
+        </form>
+    </div>
+
+    <!-- Контейнер для диаграммы -->
+    <div class="controls">
+        <div class="mode-indicator">
+            Mode: <span id="modeIndicator">Move</span>
+        </div>
+        <button onclick="setMoveMode()" id="moveBtn" class="active">🖐️ Move</button>
+        <button onclick="setSelectMode()" id="selectBtn">👆 Select</button>
+        <button onclick="zoomIn()">➕ Zoom In</button>
+        <button onclick="zoomOut()">➖ Zoom Out</button>
+        <button onclick="fitViewport()">🔍 Fit to View</button>
+        <button onclick="downloadXML()">📥 Download XML</button>
+    </div>
+
+    <div class="help-text">
+        <strong>How to move:</strong> Drag with left mouse button |
+        <strong>Zoom:</strong> Mouse wheel
+    </div>
+
+    <div id="bpmn-container">
+        <div style="text-align: center; padding: 50px;">
+
+        </div>
+    </div>
+
+    <!-- Скрытое поле с XML -->
+    <textarea id="bpmnXml" style="display: none;" th:text="${bpmnXml}"></textarea>
+</div>
+
+<!-- Подключаем BPMN.js из CDN -->
+<script src="https://unpkg.com/bpmn-js@8.7.3/dist/bpmn-viewer.development.js"></script>
+
+<script>
+    // Инициализация BPMN viewer
+    const viewer = new BpmnJS({
+        container: '#bpmn-container'
+    });
+
+    let currentMode = 'move';
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // Загрузка BPMN диаграммы
+    const bpmnXml = document.getElementById('bpmnXml').value;
+
+    if (bpmnXml && !bpmnXml.includes('<!-- BPMN file not found -->') && !bpmnXml.includes('<!-- Error reading BPMN file -->')) {
+        viewer.importXML(bpmnXml)
+            .then(() => {
+                console.log('BPMN diagram rendered successfully');
+                setupNavigation();
+                fitViewport();
+            })
+            .catch(err => {
+                console.error('Error rendering BPMN diagram:', err);
+                document.getElementById('bpmn-container').innerHTML =
+                    '<div style="color: red; padding: 20px; text-align: center;">' +
+                    '<h3>Error loading BPMN diagram</h3>' +
+                    '<p>' + err.message + '</p>' +
+                    '</div>';
+            });
+    } else {
+        document.getElementById('bpmn-container').innerHTML =
+            '<div style="color: orange; padding: 20px; text-align: center;">' +
+            '<h3>No BPMN diagram available</h3>' +
+            '<p>Please upload a BPMN file using the form above.</p>' +
+            '</div>';
+    }
+
+    function setupNavigation() {
+        const canvas = viewer.get('canvas');
+
+        // Обработка колесика мыши для zoom
+        const container = document.getElementById('bpmn-container');
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomStep = e.ctrlKey ? 0.2 : 0.1;
+            const currentZoom = canvas.zoom();
+
+            if (e.deltaY < 0) {
+                // Zoom in
+                canvas.zoom(currentZoom * (1 + zoomStep));
+            } else {
+                // Zoom out
+                canvas.zoom(currentZoom * (1 - zoomStep));
+            }
+        });
+
+        // Обработчики мыши для перемещения
+        container.addEventListener('mousedown', (e) => {
+            if (currentMode === 'move' && e.button === 0) { // Левая кнопка мыши
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                container.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && currentMode === 'move') {
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+
+                canvas.scroll({
+                    dx: dx,    // убрал минус
+                    dy: dy     // убрал минус
+                });
+
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            }
+        });
+
+        // Блокируем контекстное меню на диаграмме
+        container.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Touch events для мобильных устройств
+        container.addEventListener('touchstart', (e) => {
+            if (currentMode === 'move' && e.touches.length === 1) {
+                isDragging = true;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+                e.preventDefault();
+            }
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (isDragging && currentMode === 'move' && e.touches.length === 1) {
+                const dx = e.touches[0].clientX - lastX;
+                const dy = e.touches[0].clientY - lastY;
+
+                canvas.scroll({
+                    dx: dx,    // убрал минус
+                    dy: dy     // убрал минус
+                });
+
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+                e.preventDefault();
+            }
+        });
+
+        container.addEventListener('touchend', () => {
+            isDragging = false;
+            container.style.cursor = 'grab';
+        });
+    }
+
+    function setMoveMode() {
+        currentMode = 'move';
+        updateModeIndicator();
+        document.getElementById('bpmn-container').style.cursor = 'grab';
+    }
+
+    function setSelectMode() {
+        currentMode = 'select';
+        updateModeIndicator();
+        document.getElementById('bpmn-container').style.cursor = 'default';
+    }
+
+    function updateModeIndicator() {
+        document.getElementById('modeIndicator').textContent =
+            currentMode === 'move' ? 'Move' : 'Select';
+
+        document.getElementById('moveBtn').classList.toggle('active', currentMode === 'move');
+        document.getElementById('selectBtn').classList.toggle('active', currentMode === 'select');
+    }
+
+    function zoomIn() {
+        const canvas = viewer.get('canvas');
+        const currentZoom = canvas.zoom();
+        canvas.zoom(currentZoom * 1.2);
+    }
+
+    function zoomOut() {
+        const canvas = viewer.get('canvas');
+        const currentZoom = canvas.zoom();
+        canvas.zoom(currentZoom * 0.8);
+    }
+
+    function fitViewport() {
+        const canvas = viewer.get('canvas');
+        canvas.zoom('fit-viewport');
+    }
+
+    function downloadXML() {
+        const blob = new Blob([bpmnXml], { type: 'application/xml' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'diagram.bpmn';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Обработка изменения размера окна
+    window.addEventListener('resize', () => {
+        setTimeout(fitViewport, 100);
+    });
+</script>
+</body>
+</html>

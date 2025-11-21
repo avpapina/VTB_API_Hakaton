@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчеты</title>
+</head>
+<body>
+<h1>📈 Отчеты по тестированию</h1>
+<p th:text="${message}"></p>
+
+<div th:if="${testScenario != null}">
+    <h2>🤖 AI-СГЕНЕРИРОВАННЫЕ ТЕСТЫ</h2>
+    <ul>
+        <li th:each="step, iterStat : ${testScenario.steps}">
+            <h3>🧪 Тест #[[${iterStat.index + 1}]]: <span th:text="${step.name}"></span></h3>
+            <p>
+                <b>URL:</b> <span th:text="${step.url}"></span><br>
+                <b>Метод:</b> <span th:text="${step.method}"></span><br>
+                <b>Тестовые данные:</b>
+            </p>
+            <pre th:text="${step.requestData}" style="background:#f6f8fa; border:1px solid #ddd; padding:10px; border-radius:6px;"></pre>
+        </li>
+    </ul>
+</div>
+
+<a href="/">← На главную</a>
+</body>
+</html>

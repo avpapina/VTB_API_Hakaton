@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>BPMN AI Test Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 20px; background: #e8f5e8; border-radius: 5px; margin-bottom: 20px; }
+        .menu { margin: 20px 0; }
+        .menu a { display: inline-block; margin-right: 15px; padding: 10px 15px;
+            background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .menu a:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+<h1>🚀 BPMN AI Test Generator</h1>
+
+<div class="status">
+    <h2 th:text="${message}">Система запущена и готова к работе!</h2>
+    <p>Статус: <span th:text="${status}">Готов</span></p>
+</div>
+
+<div class="menu">
+    <a href="/upload">📁 Загрузить файлы</a>
+    <a href="/visualization" style="background: #28a745;">📊 Визуализация</a>
+    <a href="/reports" style="background: #6c757d;">📈 Отчеты</a>
+</div>
+
+<div>
+    <h3>Возможности системы:</h3>
+    <ul>
+        <li>📝 Автоматический анализ BPMN-процессов</li>
+        <li>🔗 Интеллектуальное сопоставление с API</li>
+        <li>🤖 Генерация тестовых данных с помощью ИИ</li>
+        <li>⚡ Сквозное тестирование бизнес-процессов</li>
+        <li>📊 Визуализация результатов</li>
+    </ul>
+</div>
+</body>
+</html>

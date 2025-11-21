@@ -1,5 +1,6 @@
 package com.example.bpmnai.application.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.bpmnai.bpmn.BpmnParserService;
 import com.example.bpmnai.core.domain.BpmnProcess;
 import com.example.bpmnai.core.domain.OpenApiAnalysisResult;
-import com.example.bpmnai.core.domain.TestScenario;
+import com.example.bpmnai.core.domain.TestExecution;
 import com.example.bpmnai.openapi.OpenApiParserService;
 import com.example.bpmnai.orchestrator.AiOrchestratorService;
 import com.example.bpmnai.orchestrator.TaskEndpointMapping;
@@ -22,8 +23,9 @@ import com.example.bpmnai.orchestrator.TaskEndpointMapping;
 @RequestMapping("/upload")
 public class UploadController {
 
-    // Статическое поле для хранения последних сгенерированных тестов
-    public static TestScenario lastTestScenario;
+    public static TestExecution lastTestExecution;
+    public static List<String> generatedChains = new ArrayList<>(); // для цепочек
+    public static List<String> generatedData = new ArrayList<>(); // для сгенерированных данных
 
     private final BpmnParserService bpmnParserService;
     private final OpenApiParserService openApiParserService;
@@ -50,30 +52,60 @@ public class UploadController {
             Model model) {
 
         try {
+            // Очищаем предыдущие данные
+            generatedChains.clear();
+            generatedData.clear();
+
+            System.out.println("=== НАЧАЛО ОБРАБОТКИ ФАЙЛОВ ===");
+
             // 1. Парсинг BPMN
+            System.out.println("1. Парсинг BPMN...");
             BpmnProcess bpmnResult = bpmnParserService.parseBpmnFile(bpmnFile);
-            bpmnParserService.printAnalysisToConsole(bpmnResult);
+            System.out.println("✅ BPMN распарсен: " + bpmnResult.getName());
 
             // 2. Парсинг OpenAPI
+            System.out.println("2. Парсинг OpenAPI...");
             OpenApiAnalysisResult openApiAnalysisResult = openApiParserService.parseOpenApiFile(openapiFile);
-            openApiParserService.printAnalysisToConsole(openApiAnalysisResult);
+            System.out.println("✅ OpenAPI распарсен: " + openApiAnalysisResult.getEndpoints().size() + " endpoints");
 
-            // // 5. Опционально: сопоставление задач и endpoints (если нужно)
-            List<TaskEndpointMapping> mappings = aiOrchestratorService.mapTasksToEndpoints(bpmnResult, openApiAnalysisResult);
-            aiOrchestratorService.printMappingsToConsole(mappings);
+            // 3. Сопоставление задач и endpoints
+            System.out.println("3. Сопоставление задач...");
+            List<TaskEndpointMapping> mappings = aiOrchestratorService.mapTasksToEndpoints(
+                    bpmnResult, openApiAnalysisResult, generatedData); // ← передаем список
+            System.out.println("✅ Сопоставление завершено: " + mappings.size() + " маппингов");
 
-            // 6. Передача данных на страницу upload.html
+            // 4. Запуск тестирования
+            System.out.println("4. Запуск тестирования...");
+            TestExecution testExecution = aiOrchestratorService.runApiTestingWithMappings(
+                    mappings, bpmnResult.getId(), generatedChains); // ← передаем список
+            System.out.println("✅ Тестирование завершено: " + (testExecution != null ? testExecution.getStatus() : "NULL"));
+
+            // Сохраняем и передаем в модель
+            UploadController.lastTestExecution = testExecution;
+            model.addAttribute("testExecution", testExecution);
             model.addAttribute("bpmnResult", bpmnResult);
             model.addAttribute("openApiResult", openApiAnalysisResult);
-
             model.addAttribute("mappings", mappings);
+            model.addAttribute("generatedChains", generatedChains);
+            model.addAttribute("generatedData", generatedData);
+
+            System.out.println("=== ОБРАБОТКА ЗАВЕРШЕНА УСПЕШНО ===");
 
         } catch (Exception e) {
-            String errorMessage = "❌ Ошибка при обработке файлов: " + e.getMessage();
-            model.addAttribute("message", errorMessage);
+            System.out.println("❌ ОШИБКА В UploadController: " + e.getMessage());
             e.printStackTrace();
+            model.addAttribute("message", "❌ Ошибка: " + e.getMessage());
         }
 
         return "upload";
+    }
+
+    // Методы для добавления данных (будут вызываться из AiOrchestratorService)
+    public static void addGeneratedChain(String chain) {
+        generatedChains.add(chain);
+    }
+
+    public static void addGeneratedData(String data) {
+        generatedData.add(data);
     }
 }

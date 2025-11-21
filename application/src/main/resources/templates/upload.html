@@ -3,97 +3,485 @@
 <head>
     <title>Загрузка файлов</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="file"] { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .message { padding: 10px; background: #d4edda; border-radius: 4px; margin: 15px 0; }
-        h2 { margin-top: 30px; }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 10px; }
-        .endpoint, .mapping { margin-left: 15px; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .upload-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+        }
+        input[type="file"]:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .message {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .message.success {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+        }
+        .message.error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .result-card h3 {
+            margin-top: 0;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            font-size: 1.2rem;
+        }
+        .task-list, .endpoint-list {
+            list-style: none;
+            padding-left: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .task-item, .endpoint-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid #3b82f6;
+        }
+        .task-item.gateway {
+            border-left-color: #10b981;
+        }
+        .mappings-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin: 25px 0;
+        }
+        .mapping-item {
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .mapping-item.matched {
+            border-left: 4px solid #10b981;
+        }
+        .mapping-item.unmatched {
+            border-left: 4px solid #ef4444;
+        }
+        .confidence-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .nav-link {
+            padding: 10px 20px;
+            background: white;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .file-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* Стили для результатов тестирования */
+        .test-stats {
+            background: #f0f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .step-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+        .step-success {
+            border-left-color: #10b981;
+        }
+        .step-failed {
+            border-left-color: #ef4444;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .icon-success {
+            background-color: #10b981;
+        }
+        .icon-failed {
+            background-color: #ef4444;
+        }
+        .step-details {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-left: 34px;
+        }
+        .text-green-600 { color: #059669; }
+        .text-red-600 { color: #dc2626; }
+        .text-orange-600 { color: #ea580c; }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        /* Стили для кнопки отчетов */
+        .reports-btn {
+            background: #8b5cf6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .reports-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            color: white;
+        }
     </style>
 </head>
 <body>
-<h1>📁 Загрузка BPMN и OpenAPI файлов</h1>
-
-<div th:if="${message}" class="message" th:text="${message}"></div>
-
-<form method="post" enctype="multipart/form-data">
-    <div class="form-group">
-        <label for="bpmnFile">BPMN файл (.bpmn):</label>
-        <input type="file" id="bpmnFile" name="bpmnFile" accept=".bpmn,.xml" required>
+<div class="container">
+    <div class="header">
+        <h1>BPMN AI Test Generator</h1>
+        <p class="subtitle">Загрузите BPMN диаграмму и OpenAPI спецификацию для автоматической генерации тестов</p>
     </div>
 
-    <div class="form-group">
-        <label for="openapiFile">OpenAPI файл (.yaml, .json):</label>
-        <input type="file" id="openapiFile" name="openapiFile" accept=".yaml,.yml,.json" required>
-    </div>
-
-    <button type="submit">🚀 Начать анализ</button>
-</form>
-
-<!-- BPMN анализ -->
-<div th:if="${bpmnResult != null}">
-    <h2>📊 BPMN АНАЛИЗ</h2>
-    <p>Процесс: <b th:text="${bpmnResult.name}"></b> (ID: <span th:text="${bpmnResult.id}"></span>)</p>
-
-    <h3>Задачи</h3>
-    <ul>
-        <li th:each="task : ${bpmnResult.tasks}">
-            <b th:text="${task.name}"></b> (ID: <span th:text="${task.id}"></span>, Тип: <span th:text="${task.type != null ? task.type : 'serviceTask'}"></span>)
-            <br>Документация: <span th:text="${task.description != null ? task.description : '-'}"></span>
-        </li>
-    </ul>
-
-    <h3>Шлюзы</h3>
-    <ul>
-        <li th:each="gw : ${bpmnResult.gateways}">
-            <b th:text="${gw.name}"></b> (ID: <span th:text="${gw.id}"></span>, Тип: exclusiveGateway)
-        </li>
-    </ul>
-</div>
-
-<!-- OpenAPI анализ -->
-<div th:if="${openApiResult != null}">
-    <h2>📌 OPENAPI АНАЛИЗ</h2>
-    <ul>
-        <li th:each="ep : ${openApiResult.endpoints}">
-            <div class="endpoint">
-                <b th:text="${ep.method + ' ' + ep.path}"></b>
-                <br>Operation ID: <span th:text="${ep.operationId}"></span>
-                <br>Summary: <span th:text="${ep.summary}"></span>
+    <div class="upload-card">
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="bpmnFile">BPMN файл</label>
+                <input type="file" id="bpmnFile" name="bpmnFile" accept=".bpmn,.xml" required>
+                <div class="file-info">Поддерживаемые форматы: .bpmn, .xml</div>
             </div>
-        </li>
-    </ul>
-</div>
 
-<div th:if="${mappings != null}">
-    <h2>🔗 СОПОСТАВЛЕНИЕ BPMN И OPENAPI</h2>
-    <ul>
-        <li th:each="map : ${mappings}">
-            BPMN задача: <b th:text="${map.bpmnTask.name}"></b>
-            <br th:if="${map.apiEndpoint != null}" />
-            <span th:if="${map.apiEndpoint != null}" class="mapping">
-                API endpoint: <b th:text="${map.apiEndpoint.method + ' ' + map.apiEndpoint.path}"></b>
-                <br>Operation ID: <span th:text="${map.apiEndpoint.operationId}"></span>
-                <br>Уверенность: <span th:text="${map.matchConfidence * 100}"></span>%
-            </span>
-            <span th:if="${map.apiEndpoint == null}">→ Не найден подходящий endpoint</span>
-        </li>
-    </ul>
-</div>
+            <div class="form-group">
+                <label for="openapiFile">OpenAPI спецификация</label>
+                <input type="file" id="openapiFile" name="openapiFile" accept=".yaml,.yml,.json" required>
+                <div class="file-info">Поддерживаемые форматы: .yaml, .yml, .json</div>
+            </div>
 
-<div style="margin-top: 20px;">
-    <a href="/reports">📊 Перейти к отчетам по тестам</a>
-</div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button type="submit" class="btn-primary">🚀 Начать анализ и тестирование</button>
+                <a href="/reports" class="reports-btn">📊 Посмотреть отчеты</a>
+            </div>
+        </form>
+    </div>
 
+    <div th:if="${message}" class="message" th:classappend="${message.contains('❌') or message.contains('Ошибка')} ? 'error' : 'success'" th:text="${message}"></div>
 
+    <!-- Результаты анализа -->
+    <div th:if="${bpmnResult != null or openApiResult != null}">
+        <div class="results-grid">
+            <!-- BPMN анализ -->
+            <div class="result-card" th:if="${bpmnResult != null}">
+                <h3>📋 BPMN Анализ</h3>
+                <p><strong>Процесс:</strong> <span th:text="${bpmnResult.name}"></span></p>
+                <p><strong>ID процесса:</strong> <span th:text="${bpmnResult.id}"></span></p>
 
-<div style="margin-top: 30px;">
-    <a href="/">← На главную</a>
+                <h4 style="margin-top: 20px; color: #4b5563;">Задачи процесса</h4>
+                <ul class="task-list">
+                    <li class="task-item" th:each="task : ${bpmnResult.tasks}">
+                        <strong th:text="${task.name}"></strong>
+                        <div style="font-size: 0.9rem; color: #6b7280;">
+                            ID: <span th:text="${task.id}"></span> |
+                            Тип: <span th:text="${task.type != null ? task.type : 'serviceTask'}"></span>
+                        </div>
+                        <div th:if="${task.description}" style="font-size: 0.9rem; margin-top: 5px;">
+                            <span th:text="${task.description}"></span>
+                        </div>
+                    </li>
+                </ul>
+
+                <h4 style="margin-top: 20px; color: #4b5563;" th:if="${not bpmnResult.gateways.empty}">Шлюзы</h4>
+                <ul class="task-list">
+                    <li class="task-item gateway" th:each="gw : ${bpmnResult.gateways}">
+                        <strong th:text="${gw.name}"></strong>
+                        <div style="font-size: 0.9rem; color: #6b7280;">
+                            ID: <span th:text="${gw.id}"></span> | Тип: exclusiveGateway
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- OpenAPI анализ -->
+            <div class="result-card" th:if="${openApiResult != null}">
+                <h3>🔗 OpenAPI Анализ</h3>
+                <ul class="endpoint-list">
+                    <li class="endpoint-item" th:each="ep : ${openApiResult.endpoints}">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <span style="padding: 4px 8px; background: #3b82f6; color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 600;"
+                                  th:text="${ep.method}"></span>
+                            <span style="margin-left: 10px; font-weight: 600;" th:text="${ep.path}"></span>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #6b7280;">
+                            Operation ID: <span th:text="${ep.operationId}"></span>
+                        </div>
+                        <div th:if="${ep.summary}" style="font-size: 0.9rem; margin-top: 5px;">
+                            <span th:text="${ep.summary}"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Сопоставление -->
+        <div class="mappings-card" th:if="${mappings != null}">
+            <h3>🔍 Сопоставление BPMN и OpenAPI</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                <li th:each="map : ${mappings}">
+                    <div th:class="${map.apiEndpoint != null ? 'mapping-item matched' : 'mapping-item unmatched'}">
+                        <div style="display: flex; justify-content: between; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <strong>BPMN задача:</strong> <span th:text="${map.bpmnTask.name}"></span>
+                                <div style="font-size: 0.9rem; color: #6b7280; margin-top: 5px;">
+                                    ID: <span th:text="${map.bpmnTask.id}"></span>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" th:if="${map.apiEndpoint != null}">
+                                <strong>API endpoint:</strong>
+                                <div style="display: flex; align-items: center; margin-top: 5px;">
+                                    <span style="padding: 2px 6px; background: #10b981; color: white; border-radius: 4px; font-size: 0.8rem;"
+                                          th:text="${map.apiEndpoint.method}"></span>
+                                    <span style="margin-left: 8px; font-weight: 600;" th:text="${map.apiEndpoint.path}"></span>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #6b7280; margin-top: 5px;">
+                                    Operation ID: <span th:text="${map.apiEndpoint.operationId}"></span>
+                                </div>
+                            </div>
+                            <div style="flex: 1;" th:if="${map.apiEndpoint == null}">
+                                <span style="color: #ef4444; font-weight: 600;">❌ Не найден подходящий endpoint</span>
+                            </div>
+                        </div>
+                        <div th:if="${map.apiEndpoint != null}" style="margin-top: 10px;">
+                            <span class="confidence-badge">Уверенность: <span th:text="${#numbers.formatDecimal(map.matchConfidence * 100, 1, 1)}"></span>%</span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Результаты тестирования -->
+        <div class="mappings-card" th:if="${testExecution != null}">
+            <h3>📊 Результаты тестирования</h3>
+
+            <!-- Статистика -->
+            <div class="test-stats">
+                <h4 style="margin-top: 0; color: #0369a1;">Статистика выполнения</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${testExecution.stepExecutions.size()}">0</div>
+                        <div class="stat-label">Всего шагов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #059669;"
+                             th:text="${testExecution.stepExecutions.?[success == true].size()}">0</div>
+                        <div class="stat-label">Успешных</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #dc2626;"
+                             th:text="${testExecution.stepExecutions.size() - testExecution.stepExecutions.?[success == true].size()}">0</div>
+                        <div class="stat-label">Ошибочных</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number"
+                             th:classappend="${testExecution.status == 'SUCCESS'} ? 'text-green-600' :
+                                            ${testExecution.status == 'FAILED'} ? 'text-orange-600' : 'text-red-600'"
+                             th:text="${testExecution.status}">UNKNOWN</div>
+                        <div class="stat-label">Статус</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали по шагам -->
+            <h4 style="color: #4b5563; margin-bottom: 15px;">Детали выполнения шагов</h4>
+            <div th:each="step, iterStat : ${testExecution.stepExecutions}">
+                <div class="step-item" th:classappend="${step.success} ? 'step-success' : 'step-failed'">
+
+                    <div class="step-header">
+                        <div class="step-icon" th:classappend="${step.success} ? 'icon-success' : 'icon-failed'">
+                            <span th:text="${step.success} ? '✓' : '✗'"></span>
+                        </div>
+                        <strong th:text="'Шаг ' + ${iterStat.index + 1} + ': ' + ${step.stepName}"></strong>
+                    </div>
+
+                    <div class="step-details">
+                        <div><strong>URL:</strong> <span th:text="${step.method} + ' ' + ${step.endpoint}"></span></div>
+                        <div><strong>Код ответа:</strong>
+                            <span th:text="${step.responseStatus}"
+                                  th:classappend="${step.responseStatus == 200} ? 'text-green-600' :
+                                                 ${step.responseStatus >= 400} ? 'text-red-600' : 'text-orange-600'"></span>
+                        </div>
+                        <div th:if="${step.errorMessage}">
+                            <strong>Ошибка:</strong> <span style="color: #dc2626;" th:text="${step.errorMessage}"></span>
+                        </div>
+                        <div th:if="${step.requestData}">
+                            <strong>Данные запроса:</strong>
+                            <pre class="code-block" th:text="${step.requestData.length() > 100 ? step.requestData.substring(0, 100) + '...' : step.requestData}"></pre>
+                        </div>
+                        <div th:if="${step.responseData}">
+                            <strong>Ответ:</strong>
+                            <pre class="code-block" th:text="${step.responseData.length() > 150 ? step.responseData.substring(0, 150) + '...' : step.responseData}"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка для детального отчета -->
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/reports" class="nav-link" style="background: #3b82f6; color: white; border: none;">
+                    📊 Посмотреть детальный отчет
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <a href="/" class="nav-link">🏠 На главную</a>
+    </div>
 </div>
 </body>
 </html>

@@ -1,27 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Отчеты</title>
+    <title>Отчет по тестированию</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin: 20px 0 10px 0;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .stats p {
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .step.success {
+            border-left-color: #27ae60;
+        }
+
+        .step.error {
+            border-left-color: #e74c3c;
+        }
+
+        .chain-item, .data-item, .recommendation-item {
+            background: #ecf0f1;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        .recommendation-item {
+            background: #e8f6f3;
+            border-left-color: #1abc9c;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .method {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .status-success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .url {
+            background: #ecf0f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .back-link:hover {
+            background: #2980b9;
+        }
+
+        .message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #ecf0f1;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-<h1>📈 Отчеты по тестированию</h1>
-<p th:text="${message}"></p>
+<div class="container">
+    <h1>Отчет по тестированию</h1>
 
-<div th:if="${testScenario != null}">
-    <h2>🤖 AI-СГЕНЕРИРОВАННЫЕ ТЕСТЫ</h2>
-    <ul>
-        <li th:each="step, iterStat : ${testScenario.steps}">
-            <h3>🧪 Тест #[[${iterStat.index + 1}]]: <span th:text="${step.name}"></span></h3>
-            <p>
-                <b>URL:</b> <span th:text="${step.url}"></span><br>
-                <b>Метод:</b> <span th:text="${step.method}"></span><br>
-                <b>Тестовые данные:</b>
-            </p>
-            <pre th:text="${step.requestData}" style="background:#f6f8fa; border:1px solid #ddd; padding:10px; border-radius:6px;"></pre>
-        </li>
-    </ul>
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+
+    <div th:if="${testExecution != null}">
+        <!-- Сгенерированные цепочки -->
+        <div th:if="${generatedChains != null and not generatedChains.empty}">
+            <h2>🔗 Сгенерированные цепочки</h2>
+            <div th:each="chain : ${generatedChains}" class="chain-item">
+                <p th:text="${chain}"></p>
+            </div>
+        </div>
+
+        <!-- Сгенерированные данные -->
+        <div th:if="${generatedData != null and not generatedData.empty}">
+            <h2>🧠 Сгенерированные тестовые данные</h2>
+            <div th:each="data : ${generatedData}" class="data-item">
+                <p th:text="${data}"></p>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div th:with="steps=${testExecution.stepExecutions},
+                          successCount=${steps.?[success == true].size()},
+                          failedCount=${steps.size() - successCount},
+                          successRate=${steps.size() > 0 ? (successCount / steps.size() * 100) : 0}">
+            <h2>Статистика выполнения</h2>
+            <div class="stats">
+                <p><strong>Всего шагов:</strong> <span th:text="${steps.size()}"></span></p>
+                <p><strong>Успешных:</strong> <span th:text="${successCount}"></span></p>
+                <p><strong>Ошибочных:</strong> <span th:text="${failedCount}"></span></p>
+                <p><strong>Успешность:</strong> <span th:text="${#numbers.formatDecimal(successRate, 1, 1)}"></span>%</p>
+                <p><strong>Статус:</strong> <span th:text="${testExecution.status}"></span></p>
+            </div>
+        </div>
+
+        <!-- Детали шагов -->
+        <h2>Детали выполнения шагов</h2>
+        <div th:each="step, iterStat : ${testExecution.stepExecutions}">
+            <div class="step" th:classappend="${step.success} ? 'success' : 'error'">
+                <h3>Шаг <span th:text="${iterStat.index + 1}"></span>: <span th:text="${step.stepName}"></span></h3>
+                <p><strong>Статус:</strong>
+                    <span th:if="${step.success}" class="status-success">✅ УСПЕХ</span>
+                    <span th:unless="${step.success}" class="status-error">❌ ОШИБКА</span>
+                </p>
+                <p><strong>URL:</strong>
+                    <span class="url">
+                            <span class="method" th:text="${step.method}"></span>
+                            <span th:text="${step.endpoint}"></span>
+                        </span>
+                </p>
+                <p><strong>Код ответа:</strong> <span th:text="${step.responseStatus}"></span></p>
+
+                <div th:if="${step.errorMessage}">
+                    <p><strong>Ошибка:</strong> <span th:text="${step.errorMessage}"></span></p>
+                </div>
+
+                <div th:if="${step.requestData}">
+                    <p><strong>Данные запроса:</strong></p>
+                    <pre th:text="${step.requestData}"></pre>
+                </div>
+
+                <div th:if="${step.responseData}">
+                    <p><strong>Данные ответа:</strong></p>
+                    <pre th:text="${step.responseData}"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рекомендации -->
+        <div th:if="${recommendations != null and not recommendations.empty}">
+            <h2>💡 Рекомендации и анализ</h2>
+            <div th:each="recommendation : ${recommendations}" class="recommendation-item">
+                <p th:text="${recommendation}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${testExecution == null}">
+        <div class="empty-state">
+            <p th:text="${message} ?: 'Нет данных для отчета'"></p>
+        </div>
+    </div>
+
+    <a href="/upload" class="back-link">Назад к загрузке</a>
 </div>
-
-<a href="/">← На главную</a>
 </body>
 </html>

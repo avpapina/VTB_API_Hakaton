@@ -4,122 +4,259 @@
     <meta charset="UTF-8">
     <title>BPMN Visualization</title>
     <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #1e293b;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .upload-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 30px;
+        }
+        .upload-card h3 {
+            margin-top: 0;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+        }
+        input[type="file"]:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .controls-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+            display: none; /* Скрываем по умолчанию */
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .control-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-secondary {
+            padding: 10px 16px;
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .btn-secondary.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
         #bpmn-container {
             height: 70vh;
-            border: 1px solid #ccc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             margin: 20px 0;
             background: white;
             cursor: grab;
             overflow: hidden;
             position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none; /* Скрываем по умолчанию */
         }
         #bpmn-container:active {
             cursor: grabbing;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .upload-form {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 5px;
-        }
-        .controls {
-            margin: 10px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-        button {
-            padding: 8px 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        button.active {
-            background: #28a745;
-        }
-        .mode-indicator {
-            padding: 8px 12px;
-            background: #6c757d;
-            color: white;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
         .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
         }
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
         }
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .nav-link {
+            padding: 10px 20px;
+            background: white;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .empty-state h3 {
+            color: #374151;
+            margin-bottom: 10px;
         }
         .help-text {
-            font-size: 12px;
-            color: #666;
-            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            display: none; /* Скрываем по умолчанию */
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>BPMN Diagram Visualization</h1>
-    <div style="margin-top: 30px;">
-        <a href="/">← На главную</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link">На главную</a>
+        <a href="/upload" class="nav-link">Загрузить файлы</a>
     </div>
+    <br>
 
     <!-- Сообщения -->
     <div th:if="${error}" class="message error" th:text="${error}"></div>
     <div th:if="${success}" class="message success" th:text="${success}"></div>
 
     <!-- Форма загрузки файла -->
-    <div class="upload-form">
-        <h3>Upload BPMN File</h3>
+    <div class="upload-card">
+        <h3>Загрузка BPMN файла</h3>
         <form method="post" th:action="@{/visualization/upload}" enctype="multipart/form-data">
-            <input type="file" name="bpmnFile" accept=".bpmn" required>
-            <button type="submit">Upload and Visualize</button>
+            <div class="form-group">
+                <input type="file" name="bpmnFile" accept=".bpmn" required>
+            </div>
+            <button type="submit" class="btn-primary">Загрузить и визуализировать</button>
         </form>
     </div>
 
-    <!-- Контейнер для диаграммы -->
-    <div class="controls">
-        <div class="mode-indicator">
-            Mode: <span id="modeIndicator">Move</span>
+    <!-- Состояние при отсутствии диаграммы -->
+    <div id="empty-state" class="empty-state">
+        <h3>BPMN диаграмма не загружена</h3>
+        <p>Загрузите BPMN файл для визуализации диаграммы</p>
+    </div>
+
+    <!-- Панель управления (скрыта по умолчанию) -->
+    <div id="controls-card" class="controls-card">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Навигация</label>
+                <div class="btn-group">
+                    <button onclick="setMoveMode()" id="moveBtn" class="btn-secondary active">Перемещение</button>
+                    <button onclick="setSelectMode()" id="selectBtn" class="btn-secondary">Выделение</button>
+                    <button onclick="fitViewport()" class="btn-secondary">Вписать в экран</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Действия</label>
+                <div class="btn-group">
+                    <button onclick="downloadXML()" class="btn-secondary">Скачать XML</button>
+                    <button onclick="resetView()" class="btn-secondary">Сбросить вид</button>
+                </div>
+            </div>
         </div>
-        <button onclick="setMoveMode()" id="moveBtn" class="active">🖐️ Move</button>
-        <button onclick="setSelectMode()" id="selectBtn">👆 Select</button>
-        <button onclick="zoomIn()">➕ Zoom In</button>
-        <button onclick="zoomOut()">➖ Zoom Out</button>
-        <button onclick="fitViewport()">🔍 Fit to View</button>
-        <button onclick="downloadXML()">📥 Download XML</button>
     </div>
 
-    <div class="help-text">
-        <strong>How to move:</strong> Drag with left mouse button |
-        <strong>Zoom:</strong> Mouse wheel
+    <!-- Подсказки по управлению (скрыты по умолчанию) -->
+    <div id="help-text" class="help-text">
+        <strong>Управление:</strong>
+        • Перемещение: перетаскивание левой кнопкой мыши |
+        • Масштаб: колесико мыши |
+        • Выделение: клик по элементам
     </div>
 
-    <div id="bpmn-container">
-        <div style="text-align: center; padding: 50px;">
-
-        </div>
-    </div>
+    <!-- Контейнер для диаграммы (скрыт по умолчанию) -->
+    <div id="bpmn-container"></div>
 
     <!-- Скрытое поле с XML -->
     <textarea id="bpmnXml" style="display: none;" th:text="${bpmnXml}"></textarea>
@@ -139,10 +276,13 @@
     let lastX = 0;
     let lastY = 0;
 
-    // Загрузка BPMN диаграммы
+    // Проверяем, есть ли загруженная диаграмма
     const bpmnXml = document.getElementById('bpmnXml').value;
 
     if (bpmnXml && !bpmnXml.includes('<!-- BPMN file not found -->') && !bpmnXml.includes('<!-- Error reading BPMN file -->')) {
+        // Если диаграмма загружена, показываем интерфейс
+        showDiagramInterface();
+
         viewer.importXML(bpmnXml)
             .then(() => {
                 console.log('BPMN diagram rendered successfully');
@@ -151,18 +291,41 @@
             })
             .catch(err => {
                 console.error('Error rendering BPMN diagram:', err);
-                document.getElementById('bpmn-container').innerHTML =
-                    '<div style="color: red; padding: 20px; text-align: center;">' +
-                    '<h3>Error loading BPMN diagram</h3>' +
-                    '<p>' + err.message + '</p>' +
-                    '</div>';
+                showErrorState('Ошибка загрузки BPMN диаграммы: ' + err.message);
             });
     } else {
-        document.getElementById('bpmn-container').innerHTML =
-            '<div style="color: orange; padding: 20px; text-align: center;">' +
-            '<h3>No BPMN diagram available</h3>' +
-            '<p>Please upload a BPMN file using the form above.</p>' +
-            '</div>';
+        // Если диаграмма не загружена, показываем только состояние ожидания
+        showEmptyState();
+    }
+
+    // Функция для показа интерфейса с диаграммой
+    function showDiagramInterface() {
+        document.getElementById('empty-state').style.display = 'none';
+        document.getElementById('controls-card').style.display = 'block';
+        document.getElementById('bpmn-container').style.display = 'block';
+        document.getElementById('help-text').style.display = 'block';
+    }
+
+    // Функция для показа состояния ошибки
+    function showErrorState(message) {
+        document.getElementById('empty-state').innerHTML = `
+            <div style="color: #dc2626;">
+                <h3>Ошибка загрузки BPMN диаграммы</h3>
+                <p>${message}</p>
+            </div>
+        `;
+        document.getElementById('empty-state').style.display = 'block';
+        document.getElementById('controls-card').style.display = 'none';
+        document.getElementById('bpmn-container').style.display = 'none';
+        document.getElementById('help-text').style.display = 'none';
+    }
+
+    // Функция для показа состояния ожидания
+    function showEmptyState() {
+        document.getElementById('empty-state').style.display = 'block';
+        document.getElementById('controls-card').style.display = 'none';
+        document.getElementById('bpmn-container').style.display = 'none';
+        document.getElementById('help-text').style.display = 'none';
     }
 
     function setupNavigation() {
@@ -187,7 +350,7 @@
 
         // Обработчики мыши для перемещения
         container.addEventListener('mousedown', (e) => {
-            if (currentMode === 'move' && e.button === 0) { // Левая кнопка мыши
+            if (currentMode === 'move' && e.button === 0) {
                 isDragging = true;
                 lastX = e.clientX;
                 lastY = e.clientY;
@@ -202,8 +365,8 @@
                 const dy = e.clientY - lastY;
 
                 canvas.scroll({
-                    dx: dx,    // убрал минус
-                    dy: dy     // убрал минус
+                    dx: dx,
+                    dy: dy
                 });
 
                 lastX = e.clientX;
@@ -214,7 +377,7 @@
         document.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
-                container.style.cursor = 'grab';
+                container.style.cursor = currentMode === 'move' ? 'grab' : 'default';
             }
         });
 
@@ -239,8 +402,8 @@
                 const dy = e.touches[0].clientY - lastY;
 
                 canvas.scroll({
-                    dx: dx,    // убрал минус
-                    dy: dy     // убрал минус
+                    dx: dx,
+                    dy: dy
                 });
 
                 lastX = e.touches[0].clientX;
@@ -251,45 +414,36 @@
 
         container.addEventListener('touchend', () => {
             isDragging = false;
-            container.style.cursor = 'grab';
+            container.style.cursor = currentMode === 'move' ? 'grab' : 'default';
         });
     }
 
     function setMoveMode() {
         currentMode = 'move';
-        updateModeIndicator();
+        updateModeButtons();
         document.getElementById('bpmn-container').style.cursor = 'grab';
     }
 
     function setSelectMode() {
         currentMode = 'select';
-        updateModeIndicator();
+        updateModeButtons();
         document.getElementById('bpmn-container').style.cursor = 'default';
     }
 
-    function updateModeIndicator() {
-        document.getElementById('modeIndicator').textContent =
-            currentMode === 'move' ? 'Move' : 'Select';
-
+    function updateModeButtons() {
         document.getElementById('moveBtn').classList.toggle('active', currentMode === 'move');
         document.getElementById('selectBtn').classList.toggle('active', currentMode === 'select');
-    }
-
-    function zoomIn() {
-        const canvas = viewer.get('canvas');
-        const currentZoom = canvas.zoom();
-        canvas.zoom(currentZoom * 1.2);
-    }
-
-    function zoomOut() {
-        const canvas = viewer.get('canvas');
-        const currentZoom = canvas.zoom();
-        canvas.zoom(currentZoom * 0.8);
     }
 
     function fitViewport() {
         const canvas = viewer.get('canvas');
         canvas.zoom('fit-viewport');
+    }
+
+    function resetView() {
+        const canvas = viewer.get('canvas');
+        canvas.zoom(1.0);
+        canvas.scroll({ dx: 0, dy: 0 });
     }
 
     function downloadXML() {
@@ -306,7 +460,9 @@
 
     // Обработка изменения размера окна
     window.addEventListener('resize', () => {
-        setTimeout(fitViewport, 100);
+        if (document.getElementById('bpmn-container').style.display !== 'none') {
+            setTimeout(fitViewport, 100);
+        }
     });
 </script>
 </body>

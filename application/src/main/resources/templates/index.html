@@ -3,37 +3,211 @@
 <head>
     <title>BPMN AI Test Generator</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .status { padding: 20px; background: #e8f5e8; border-radius: 5px; margin-bottom: 20px; }
-        .menu { margin: 20px 0; }
-        .menu a { display: inline-block; margin-right: 15px; padding: 10px 15px;
-            background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-        .menu a:hover { background: #0056b3; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .menu-card {
+            background: white;
+            padding: 25px 20px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid #f1f5f9;
+        }
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .menu-card.upload {
+            border-top: 4px solid #3b82f6;
+        }
+        .menu-card.upload:hover {
+            border-color: #3b82f6;
+        }
+        .menu-card.visualization {
+            border-top: 4px solid #10b981;
+        }
+        .menu-card.visualization:hover {
+            border-color: #10b981;
+        }
+        .menu-card.reports {
+            border-top: 4px solid #6b7280;
+        }
+        .menu-card.reports:hover {
+            border-color: #6b7280;
+        }
+        .menu-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+            color: #64748b;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+        .feature-item strong {
+            color: #1e293b;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .step-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .step-list li {
+            padding: 12px 0;
+            padding-left: 40px;
+            position: relative;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .step-list li:before {
+            content: counter(step);
+            counter-increment: step;
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 28px;
+            height: 28px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .step-list-container {
+            counter-reset: step;
+        }
     </style>
 </head>
 <body>
-<h1>🚀 BPMN AI Test Generator</h1>
+<div class="container">
+    <div class="header">
+        <h1>AI-Powered BPMN Testing Platform</h1>
+        <p class="subtitle">Автоматическая генерация тестовых сценариев из BPMN-диаграмм с использованием искусственного интеллекта</p>
+    </div>
 
-<div class="status">
-    <h2 th:text="${message}">Система запущена и готова к работе!</h2>
-    <p>Статус: <span th:text="${status}">Готов</span></p>
-</div>
+    <div class="menu-grid">
+        <a href="/upload" class="menu-card upload">
+            <span class="menu-icon">📁</span>
+            <strong>Загрузка BPMN</strong>
+            <div style="font-size: 0.9rem; color: #64748b; margin-top: 8px;">Загрузите диаграммы процессов для анализа</div>
+        </a>
+        <a href="/visualization" class="menu-card visualization">
+            <span class="menu-icon">📊</span>
+            <strong>Аналитика</strong>
+            <div style="font-size: 0.9rem; color: #64748b; margin-top: 8px;">Визуализация процессов и тестовых сценариев</div>
+        </a>
+        <a href="/reports" class="menu-card reports">
+            <span class="menu-icon">📈</span>
+            <strong>Отчеты</strong>
+            <div style="font-size: 0.9rem; color: #64748b; margin-top: 8px;">Готовые тест-кейсы и документация</div>
+        </a>
+    </div>
 
-<div class="menu">
-    <a href="/upload">📁 Загрузить файлы</a>
-    <a href="/visualization" style="background: #28a745;">📊 Визуализация</a>
-    <a href="/reports" style="background: #6c757d;">📈 Отчеты</a>
-</div>
-
-<div>
-    <h3>Возможности системы:</h3>
-    <ul>
-        <li>📝 Автоматический анализ BPMN-процессов</li>
-        <li>🔗 Интеллектуальное сопоставление с API</li>
-        <li>🤖 Генерация тестовых данных с помощью ИИ</li>
-        <li>⚡ Сквозное тестирование бизнес-процессов</li>
-        <li>📊 Визуализация результатов</li>
-    </ul>
+    <div class="card-grid">
+        <div class="card">
+            <h3>Преимущества системы</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <strong>Экономия времени</strong>
+                    <div style="font-size: 0.9rem; color: #64748b;">Сокращение времени на написание тестов до 80%</div>
+                </div>
+                <div class="feature-item">
+                    <strong>Полное покрытие</strong>
+                    <div style="font-size: 0.9rem; color: #64748b;">Все пути выполнения процессов покрыты тестами</div>
+                </div>
+                <div class="feature-item">
+                    <strong>AI-аналитика</strong>
+                    <div style="font-size: 0.9rem; color: #64748b;">Умная генерация тестовых данных и сценариев</div>
+                </div>
+                <div class="feature-item">
+                    <strong>Визуальный контроль</strong>
+                    <div style="font-size: 0.9rem; color: #64748b;">Наглядное отображение качества тестирования</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Быстрый старт</h3>
+            <div class="step-list-container">
+                <ol class="step-list">
+                    <li>Загрузите BPMN-файлы в систему</li>
+                    <li>Настройте параметры тестирования при необходимости</li>
+                    <li>Запустите анализ и генерацию тестов</li>
+                    <li>Экспортируйте результаты в нужном формате</li>
+                </ol>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

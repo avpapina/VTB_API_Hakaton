@@ -22,21 +22,22 @@ public class AiOrchestratorService {
     private final AdvancedNLPSemanticMatcher semanticMatcher;
     private final GPT2DataGenerator gpt2DataGenerator;
 
-    public AiOrchestratorService(AdvancedNLPSemanticMatcher semanticMatcher, 
-                            GPT2DataGenerator gpt2DataGenerator) {
+    public AiOrchestratorService(AdvancedNLPSemanticMatcher semanticMatcher,
+                                 GPT2DataGenerator gpt2DataGenerator) {
         this.semanticMatcher = semanticMatcher;
         this.gpt2DataGenerator = gpt2DataGenerator;
     }
 
     public List<TaskEndpointMapping> mapTasksToEndpoints(BpmnProcess bpmnResult,
-                                                        OpenApiAnalysisResult openApiResult) {
+                                                         OpenApiAnalysisResult openApiResult,
+                                                         List<String> generatedDataOutput) { // ← ДОБАВЛЕН ПАРАМЕТР
         if (bpmnResult == null || openApiResult == null) {
             return new ArrayList<>();
         }
 
         List<TaskEndpointMapping> mappings =
                 mapTasksToEndpoints(bpmnResult.getTasks(), openApiResult.getEndpoints());
-        
+
         // ✅ ДОБАВЬ ГЕНЕРАЦИЮ ДАННЫХ ДЛЯ КАЖДОЙ ЗАДАЧИ
         System.out.println("🧠 ГЕНЕРАЦИЯ ТЕСТОВЫХ ДАННЫХ:");
         for (TaskEndpointMapping mapping : mappings) {
@@ -44,38 +45,47 @@ public class AiOrchestratorService {
                 String taskName = mapping.getBpmnTask().getName();
                 String endpoint = mapping.getApiEndpoint().getPath();
                 String method = mapping.getApiEndpoint().getMethod();
-                
+
                 String generatedData = gpt2DataGenerator.generateTestData(taskName, endpoint, method);
-                
+
                 // ✅ СОХРАНИ ДАННЫЕ В МAPPING
                 mapping.setGeneratedTestData(generatedData);
-                
+
                 System.out.println("   ✅ " + taskName + " -> " + generatedData);
+
+                // ✅ ДОБАВЛЯЕМ В ПЕРЕДАННЫЙ СПИСОК
+                if (generatedDataOutput != null) {
+                    generatedDataOutput.add("✅ " + taskName + " -> " + generatedData);
+                }
             }
         }
 
         Path file = Paths.get("test-executor", "src", "main", "resources",
-                    "matched", "matchedTasks.json")
-                        .normalize()
-                        .toAbsolutePath();
+                        "matched", "matchedTasks.json")
+                .normalize()
+                .toAbsolutePath();
         String filePath = file.toString();
 
         MatchedTaskSaver.saveMatchedTasks(mappings, bpmnResult.getId(), filePath);
 
-        runApiTestingWithMappings(mappings, bpmnResult.getId());
-
         return mappings;
+    }
+
+    // Старый метод для обратной совместимости
+    public List<TaskEndpointMapping> mapTasksToEndpoints(BpmnProcess bpmnResult,
+                                                         OpenApiAnalysisResult openApiResult) {
+        return mapTasksToEndpoints(bpmnResult, openApiResult, null);
     }
 
     public void demonstrateAIDataGeneration(List<TaskEndpointMapping> mappings) {
         System.out.println("🧠 ДЕМОНСТРАЦИЯ ГЕНЕРАЦИИ ДАННЫХ ИИ (Phi-3):");
-        
+
         for (TaskEndpointMapping mapping : mappings) {
             if (mapping.getApiEndpoint() != null) {
                 String taskName = mapping.getBpmnTask().getName();
                 String endpoint = mapping.getApiEndpoint().getPath();
                 String method = mapping.getApiEndpoint().getMethod();
-                
+
                 System.out.println("\n🔹 Задача: " + taskName);
                 String generatedData = gpt2DataGenerator.generateTestData(taskName, endpoint, method);
                 System.out.println("   Сгенерированные данные: " + generatedData);
@@ -83,10 +93,18 @@ public class AiOrchestratorService {
         }
     }
 
-    public void runApiTestingWithMappings(List<TaskEndpointMapping> mappings, String processId) {
+    public TestExecution runApiTestingWithMappings(List<TaskEndpointMapping> mappings,
+                                                   String processId,
+                                                   List<String> generatedChainsOutput) { // ← ДОБАВЛЕН ПАРАМЕТР
         System.out.println("Запускаю тестирование API с новыми данными...");
-        
+
         try {
+            // ✅ ДОБАВЛЯЕМ ЦЕПОЧКИ В ПЕРЕДАННЫЙ СПИСОК
+            if (generatedChainsOutput != null) {
+                generatedChainsOutput.add("=== ЗАПУСК ТЕСТИРОВАНИЯ С ПЕРЕДАННЫМИ ДАННЫМИ ===");
+                generatedChainsOutput.add("Получено задач напрямую: " + mappings.size());
+            }
+
             // Преобразуем mappings в matched tasks
             List<MatchedTask> matchedTasks = new ArrayList<>();
             for (TaskEndpointMapping mapping : mappings) {
@@ -95,34 +113,63 @@ public class AiOrchestratorService {
                 if (mapping.getApiEndpoint() != null) {
                     task.setHttpMethod(mapping.getApiEndpoint().getMethod());
                     task.setEndpointUrl(mapping.getApiEndpoint().getPath());
+
+                    // ✅ ДОБАВЛЯЕМ ЦЕПОЧКУ В ПЕРЕДАННЫЙ СПИСОК
+                    if (generatedChainsOutput != null) {
+                        String chain = " - " + mapping.getBpmnTask().getName() + ": " +
+                                mapping.getBpmnTask().getName() + " -> " +
+                                mapping.getApiEndpoint().getMethod() + " " + mapping.getApiEndpoint().getPath();
+                        generatedChainsOutput.add(chain);
+                    }
+                } else {
+                    // ✅ ДОБАВЛЯЕМ ЦЕПОЧКУ БЕЗ ENDPOINT
+                    if (generatedChainsOutput != null) {
+                        String chain = " - " + mapping.getBpmnTask().getName() + ": " +
+                                mapping.getBpmnTask().getName() + " -> NO ENDPOINT";
+                        generatedChainsOutput.add(chain);
+                    }
                 }
                 task.setProcessId(processId);
-                
+
                 // ✅ ПЕРЕДАЕМ СГЕНЕРИРОВАННЫЕ ДАННЫЕ
                 if (mapping.getGeneratedTestData() != null) {
                     task.setTestData(mapping.getGeneratedTestData());
                     System.out.println("   📦 Данные для " + task.getTaskName() + ": " + mapping.getGeneratedTestData());
                 }
-                
+
                 matchedTasks.add(task);
             }
-            
+
+            // ✅ ДОБАВЛЯЕМ ИНФОРМАЦИЮ О СЦЕНАРИИ
+            if (generatedChainsOutput != null) {
+                generatedChainsOutput.add("Сгенерирован сценарий: Auto-generated scenario");
+                generatedChainsOutput.add("ВЫПОЛНЕНИЕ ТЕСТОВ...");
+            }
+
             // Запускаем тесты напрямую с данными из памяти
             TestExecution result = TestExecutorRunner.runTestsWithData(matchedTasks);
-            
+
             if (result != null) {
                 System.out.println("Тестирование завершено со статусом: " + result.getStatus());
+                return result;
             } else {
                 System.out.println("Тестирование завершилось с ошибкой");
+                return null;
             }
         } catch (Exception e) {
             System.out.println("❌ Ошибка запуска тестов: " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
     }
 
+    // Старый метод для обратной совместимости
+    public TestExecution runApiTestingWithMappings(List<TaskEndpointMapping> mappings, String processId) {
+        return runApiTestingWithMappings(mappings, processId, null);
+    }
+
     public List<TaskEndpointMapping> mapTasksToEndpoints(List<BpmnTask> tasks,
-                                                        List<ApiEndpoint> endpoints) {
+                                                         List<ApiEndpoint> endpoints) {
         List<TaskEndpointMapping> mappings = new ArrayList<>();
         if (tasks == null || endpoints == null) return mappings;
 
@@ -134,7 +181,6 @@ public class AiOrchestratorService {
             mapping.setMatchConfidence(calculateMatchConfidence(task, matchedEndpoint));
             mappings.add(mapping);
         }
-        
 
         return mappings;
     }
@@ -176,7 +222,7 @@ public class AiOrchestratorService {
             double totalScore = similarity + methodBonus;
 
             System.out.println("   Сравнение с " + endpoint.getMethod() + " " + endpoint.getPath() +
-                               " -> score: " + String.format("%.2f", totalScore));
+                    " -> score: " + String.format("%.2f", totalScore));
 
             if (totalScore > bestScore) {
                 bestScore = totalScore;
@@ -186,7 +232,7 @@ public class AiOrchestratorService {
 
         if (bestMatch != null) {
             System.out.println("   🎯 Лучшее соответствие: " + bestMatch.getMethod() + " " +
-                               bestMatch.getPath() + " (score: " + String.format("%.2f", bestScore) + ")");
+                    bestMatch.getPath() + " (score: " + String.format("%.2f", bestScore) + ")");
         } else {
             System.out.println("   ❌ Нет подходящих endpoint'ов (лучший score < 0.3)");
         }
@@ -196,8 +242,8 @@ public class AiOrchestratorService {
 
     private String normalizeTaskName(String taskName) {
         return taskName.replaceAll("(POST|GET|PUT|DELETE|PATCH)\\s+", "")
-                       .replaceAll("\\s+", " ")
-                       .trim();
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private String buildEndpointText(ApiEndpoint endpoint) {
